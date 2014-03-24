@@ -77,7 +77,7 @@ abbrev_pwd() {
     i=$(($i+1))
   done
   
-  echo $dir$end
+  echo $dir
 }
 
 # Display relevant info for the current git branch if any.
