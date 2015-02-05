@@ -1,4 +1,12 @@
 
+# Source required definitions
+BASHRC_DIR=~/bashrc-files
+source $CS161_BASHRC_DIR/git-prompt.sh
+export GIT_PS1_SHOWDIRTYSTATE=1
+export GIT_PS1_SHOWSTASHSTATE=1
+export GIT_PS1_SHOWUPSTREAM="auto"
+export GIT_PS1_DESCRIBE_STYLE="branch"
+
 # PROMPT COLORS!!!
 # Reset
 Color_Off='\[\e[0m\]'       # Text Reset
@@ -80,40 +88,28 @@ abbrev_pwd() {
   echo $dir
 }
 
-# Display relevant info for the current git branch if any.
-git_prompt() {
-  local git_branch=`git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
-  # TODO: do more w/ this information
-  local git_status=`git status -z 2> /dev/null`
-  local branch_color=$Green
-  if [ ${#git_status} -ne 0 ]; then
-    branch_color=$Purple
-  fi
-  echo $branch_color$git_branch
-}
-
 # Main function for the prompt.
 prompt() {
+  local sep_color=$White
+
   local status=`echo $?`
   local status_code=''
   if [ $status -ne 0 ]; then
     status_code=$Red'#'$IYellow$status
   fi
 
-  local working_dir=$White`abbrev_pwd`
+  local working_dir=$sep_color'['$IBlue`abbrev_pwd`
 
-  local git_info=''
-  git branch &>/dev/null;
-  if [ $? -eq 0 ]; then
-    local git_info=$IWhite'('`git_prompt`$IWhite')'
-  fi
+  # __git_ps1 is defined in git-prompt.sh
+  local git_info=`__git_ps1 $sep_color'|'$IBlack'%s'`
 
-  local prompt_char=$ICyan'\$ '$Color_Off
+  local prompt_char=$ICyan'\$'
   if [ `id -u` = 0 ]; then
-    prompt_char=$Red'# '$Color_Off
+    prompt_char=$Red'#'
   fi
+  local prompt_end=$sep_color']'$prompt_char' '$Color_Off
 
-  PS1=$status_code$working_dir$git_info$prompt_char
+  PS1=$status_code$working_dir$git_info$prompt_end
 }
 
 PROMPT_COMMAND=prompt
