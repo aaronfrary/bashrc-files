@@ -1,7 +1,4 @@
 
-# Source required definitions
-BASHRC_DIR=~/bashrc-files
-source $CS161_BASHRC_DIR/git-prompt.sh
 export GIT_PS1_SHOWDIRTYSTATE=1
 export GIT_PS1_SHOWSTASHSTATE=1
 export GIT_PS1_SHOWUPSTREAM="auto"
