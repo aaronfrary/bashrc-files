@@ -110,6 +110,4 @@ prompt() {
 }
 
 PROMPT_COMMAND=prompt
-# Set cursor color
-echo -ne '\e]12;DarkOrange\a'
 
