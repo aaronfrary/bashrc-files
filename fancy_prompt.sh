@@ -49,32 +49,33 @@ On_ICyan='\[\e[0;106m\]'    # Cyan
 On_IWhite='\[\e[0;107m\]'   # White
 
 # Keep working directory description to a reasonable length.
-abbrev_pwd() {
+abbrev_home_dir() {
   # Recreate '\w' home dir replacement
   local dir=`pwd`
-  local end='/'
-  local in_home=0
-  if [ $dir = "/" ]; then
-    end=''
-  fi
   if [[ $dir =~ ^$HOME($|\/) ]]; then
     dir="~${dir#$HOME}"
-    in_home=1
+  fi
+  echo $dir
+}
+
+shorten_dir() {
+  local dir=$1
+  local maxlen=$2
+
+  local end='/'
+  if [ $dir = "/" ]; then
+    end=''
   fi
 
   local slashes=${dir//[^\/]}
   local depth=$((1 + ${#slashes}))
-
-  # Choose max length based on terminal width
-  local ncols=`tput cols`
-  local max_dir_chars=$(($ncols / 2))
 
   # Abbreviate until short enough
   local beginning=
   local middle=
   local end=
   local i=2
-  while [[ $i -lt $depth && ${#dir} -gt $max_dir_chars ]]; do
+  while [[ $i -lt $depth && ${#dir} -gt $maxlen ]]; do
     beginning=`echo $dir | cut -d / -f 1-$(($i - 1))`
     middle=`echo $dir | cut -d / -f $i`
     end=`echo $dir | cut -d / -f $(($i + 1))-$depth`
@@ -88,6 +89,45 @@ abbrev_pwd() {
 # Main function for the prompt.
 prompt() {
   local sep_color=$White
+  local max5=`tput cols`
+  local max1=$(($max5 / 5))
+  local max2=$(($max1 + $max1))
+  local max3=$(($max2 + $max1))
+  local max4=$(($max2 + $max2))
+
+  # __git_ps1 is defined in git-prompt.sh
+  local git=`__git_ps1 "%s"`
+  local gitlen=${#git}
+
+  local dir=`abbrev_home_dir`
+  local dirlen=${#dir}
+
+  local len=$(($gitlen + $dirlen))
+
+  local br1=
+  local br2=
+
+  if [[ $gitlen -gt $max3 ]]; then
+    br2='\n'
+    if [[ $len -gt $max4 ]]; then
+      br1='\n'
+    fi
+  elif [[ $len -gt $max3 ]]; then
+    dir=`shorten_dir $dir $max2`
+    len=$(($gitlen + ${#dir}))
+    if [[ $len -gt $max4 ]]; then
+      br1='\n'
+    elif [[ $len -gt $max3 ]]; then
+      br2='\n'
+    fi
+  fi
+
+  local working_dir=$sep_color'['$IBlue$dir
+
+  local git_info=
+  if [[ -n "$git" ]]; then
+    git_info=$br1$sep_color'|'$IBlack$git
+  fi
 
   local status=`echo $?`
   local status_code=''
@@ -95,16 +135,11 @@ prompt() {
     status_code=$Red'#'$IYellow$status
   fi
 
-  local working_dir=$sep_color'['$IBlue`abbrev_pwd`
-
-  # __git_ps1 is defined in git-prompt.sh
-  local git_info=`__git_ps1 $sep_color'|'$IBlack'%s'`
-
   local prompt_char=$ICyan'\$'
   if [ `id -u` = 0 ]; then
     prompt_char=$Red'#'
   fi
-  local prompt_end=$sep_color']'$prompt_char' '$Color_Off
+  local prompt_end=$sep_color']'$br2$prompt_char' '$Color_Off
 
   PS1=$status_code$working_dir$git_info$prompt_end
 }
