@@ -88,6 +88,9 @@ shorten_dir() {
 
 # Main function for the prompt.
 prompt() {
+  # Check exit code before running any commands.
+  local exit_code="$?"
+
   local sep_color=$White
   local max5=`tput cols`
   local max1=$(($max5 / 5))
@@ -129,10 +132,9 @@ prompt() {
     git_info=$br1$sep_color'|'$IBlack$git
   fi
 
-  local status=`echo $?`
-  local status_code=''
-  if [ $status -ne 0 ]; then
-    status_code=$Red'#'$IYellow$status
+  local status=
+  if [ $exit_code -ne 0 ]; then
+    status=$Red'#'$IYellow$exit_code
   fi
 
   local prompt_char=$ICyan'\$'
@@ -141,7 +143,7 @@ prompt() {
   fi
   local prompt_end=$sep_color']'$br2$prompt_char' '$Color_Off
 
-  PS1=$status_code$working_dir$git_info$prompt_end
+  PS1=$status$working_dir$git_info$prompt_end
 }
 
 PROMPT_COMMAND=prompt
