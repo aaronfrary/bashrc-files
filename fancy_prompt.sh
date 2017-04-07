@@ -91,7 +91,7 @@ prompt() {
   # Check exit code before running any commands.
   local exit_code="$?"
 
-  local sep_color=$White
+  local sep_color=$Color_Off
   local max5=`tput cols`
   local max1=$(($max5 / 5))
   local max2=$(($max1 + $max1))
@@ -125,19 +125,19 @@ prompt() {
     fi
   fi
 
-  local working_dir=$sep_color'['$IBlue$dir
+  local working_dir=$sep_color'['$Cyan$dir
 
   local git_info=
   if [[ -n "$git" ]]; then
-    git_info=$br1$sep_color'|'$IBlack$git
+    git_info=$br1$sep_color'|'$Yellow$git
   fi
 
   local status=
   if [ $exit_code -ne 0 ]; then
-    status=$Red'#'$IYellow$exit_code
+    status=$Red'#'$White$exit_code
   fi
 
-  local prompt_char=$ICyan'\$'
+  local prompt_char=$White'\$'
   if [ `id -u` = 0 ]; then
     prompt_char=$Red'#'
   fi
