@@ -82,7 +82,7 @@ shorten_dir() {
     dir=$beginning'/'${middle:0:2}'/'$end
     i=$(($i+1))
   done
-  
+
   echo $dir
 }
 
